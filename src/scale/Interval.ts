@@ -166,7 +166,8 @@ class IntervalScale<SETTING extends Dictionary<unknown> = Dictionary<unknown>> e
             const minorInterval = interval / splitNumber;
 
             while (count < splitNumber - 1) {
-                const minorTick = roundNumber(prevTick.value + (count + 1) * minorInterval);
+                const precision = numberUtil.getPrecision(prevTick.value);
+                const minorTick = roundNumber(prevTick.value + (count + 1) * minorInterval, precision);
 
                 // For the first and last interval. The count may be less than splitNumber.
                 if (minorTick > extent[0] && minorTick < extent[1]) {
@@ -279,12 +280,14 @@ class IntervalScale<SETTING extends Dictionary<unknown> = Dictionary<unknown>> e
         this.calcNiceTicks(opt.splitNumber, opt.minInterval, opt.maxInterval);
         // let extent = this._extent;
         const interval = this._interval;
-
-        if (!opt.fixMin) {
-            extent[0] = roundNumber(Math.floor(extent[0] / interval) * interval);
-        }
-        if (!opt.fixMax) {
-            extent[1] = roundNumber(Math.ceil(extent[1] / interval) * interval);
+        if (!opt.fixMin || !opt.fixMax) {
+            const precision = helper.getIntervalPrecision(interval);
+            if (!opt.fixMin) {
+                extent[0] = roundNumber(Math.floor(extent[0] / interval) * interval, precision);
+            }
+            if (!opt.fixMax) {
+                extent[1] = roundNumber(Math.ceil(extent[1] / interval) * interval, precision);
+            }
         }
     }
 

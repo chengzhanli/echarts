@@ -31,7 +31,8 @@ import * as zrUtil from 'zrender/src/core/util';
 const RADIAN_EPSILON = 1e-4;
 // Although chrome already enlarge this number to 100 for `toFixed`, but
 // we sill follow the spec for compatibility.
-const ROUND_SUPPORTED_PRECISION_MAX = 20;
+// You can adjust the upper limit of the precision by adjusting the value
+const ROUND_SUPPORTED_PRECISION_MAX = 100; // 20
 
 function _trim(str: string): string {
     return str.replace(/^\s+|\s+$/g, '');
@@ -212,9 +213,12 @@ export function getPixelPrecision(dataExtent: [number, number], pixelExtent: [nu
     const LN10 = Math.LN10;
     const dataQuantity = Math.floor(log(dataExtent[1] - dataExtent[0]) / LN10);
     const sizeQuantity = Math.round(log(Math.abs(pixelExtent[1] - pixelExtent[0])) / LN10);
-    // toFixed() digits argument must be between 0 and 20.
-    const precision = Math.min(Math.max(-dataQuantity + sizeQuantity, 0), 20);
-    return !isFinite(precision) ? 20 : precision;
+    // toFixed() digits argument must be between 0 and ROUND_SUPPORTED_PRECISION_MAX.
+    const precision = Math.min(
+      Math.max(-dataQuantity + sizeQuantity, 0),
+      ROUND_SUPPORTED_PRECISION_MAX
+    );
+    return isFinite(precision) ? precision : ROUND_SUPPORTED_PRECISION_MAX;
 }
 
 /**
@@ -496,8 +500,10 @@ export function nice(val: number, round?: boolean): number {
     val = nf * exp10;
 
     // Fix 3 * 0.1 === 0.30000000000000004 issue (see IEEE 754).
-    // 20 is the uppper bound of toFixed.
-    return exponent >= -20 ? +val.toFixed(exponent < 0 ? -exponent : 0) : val;
+    // ROUND_SUPPORTED_PRECISION_MAX is the uppper bound of toFixed.
+    return exponent >= -ROUND_SUPPORTED_PRECISION_MAX
+      ? +val.toFixed(exponent < 0 ? -exponent : 0)
+      : val;
 }
 
 /**

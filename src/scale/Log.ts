@@ -68,7 +68,10 @@ class LogScale extends Scale {
 
         return zrUtil.map(ticks, function (tick) {
             const val = tick.value;
-            let powVal = numberUtil.round(mathPow(this.base, val));
+            const rawVal = mathPow(this.base, val);
+            // Fix #21099
+            const precision = numberUtil.getPrecisionSafe(rawVal) || 0;
+            let powVal = parseFloat(roundingErrorFix(rawVal, precision as number, true));
 
             // Fix #4158
             powVal = (val === extent[0] && this._fixMin)
