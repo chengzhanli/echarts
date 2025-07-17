@@ -345,12 +345,14 @@ class IntervalScale<SETTING extends ScaleSettingDefault = ScaleSettingDefault> e
 
         this.calcNiceTicks(opt.splitNumber, opt.minInterval, opt.maxInterval);
         const interval = this._interval;
-
-        if (!opt.fixMin) {
-            extent[0] = roundNumber(Math.floor(extent[0] / interval) * interval);
-        }
-        if (!opt.fixMax) {
-            extent[1] = roundNumber(Math.ceil(extent[1] / interval) * interval);
+        if (!opt.fixMin || !opt.fixMax) {
+            const precision = helper.getIntervalPrecision(interval);
+            if (!opt.fixMin) {
+                extent[0] = roundNumber(Math.floor(extent[0] / interval) * interval, precision);
+            }
+            if (!opt.fixMax) {
+                extent[1] = roundNumber(Math.ceil(extent[1] / interval) * interval, precision);
+            }
         }
         this._innerSetExtent(extent[0], extent[1]);
     }
